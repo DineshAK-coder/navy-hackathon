@@ -1,25 +1,22 @@
 from flask import Flask, jsonify, render_template
 import pandas as pd
+import os
 
 app = Flask(__name__)
 
+# This is the "Entry Point" Vercel looks for
 @app.route('/')
-def home():
-    # This will serve your main HTML file
+def index():
     return render_template('index.html')
 
 @app.route('/api/data')
 def get_data():
-    # Load the processed ML results
-    df = pd.read_csv('processed_results.csv')
-    # Convert to JSON for the frontend
+    # Use relative pathing to ensure it finds the CSV in the Vercel environment
+    base_path = os.path.dirname(__file__)
+    file_path = os.path.join(base_path, 'processed_results.csv')
+    df = pd.read_csv(file_path)
     return jsonify(df.to_dict(orient='records'))
 
-# Change app.run() to this so Vercel can find the 'app' object
-app = Flask(__name__)
-
-# ... your routes ...
-
-# Vercel needs the 'app' variable, it doesn't use the __main__ block
+# Vercel doesn't use app.run(), but keeping this for local testing is fine
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
